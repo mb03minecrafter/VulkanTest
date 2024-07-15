@@ -20,7 +20,7 @@ Renderer::Renderer() :
 	syncObjects(device, MAX_FRAMES_IN_FLIGHT)
 {
 	vertexBuffer = new VBuffer(device, physicalDevice, (VkDeviceSize)(vertices.size() * sizeof(vertices[0])), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, vertices);
-
+	//test additional push
 	createCommandBuffer();
 }
 
