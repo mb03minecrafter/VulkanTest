@@ -3,12 +3,13 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "Vertex.h"
+#include "vk_mem_alloc.h"
 class VBuffer : VObject
 {
 public:
 
-	VBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlagBits usage, VkSharingMode sharingMode, std::vector<Vertex> vertices);
-	void cleanUp();
+	VBuffer(VmaAllocator allocator, VkDeviceSize size, int usage);
+	virtual void cleanUp();
 
 	operator VkBuffer() const {
 		return buffer;
@@ -16,13 +17,15 @@ public:
 
 private:
 
-	VkDevice device;
-	VkPhysicalDevice physicalDevice;
 	VkBufferCreateInfo bufferInfo{};
 
-	VkBuffer buffer;
-	VkDeviceMemory bufferMemory;
 
-	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	VmaAllocationCreateInfo allocInfo;
+protected:
+	VkBuffer buffer;
+	VmaAllocator allocator;
+	VmaAllocation allocation;
+
+
 };
 

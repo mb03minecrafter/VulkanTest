@@ -15,6 +15,10 @@
 #include "VSyncObjects.h"
 #include "VBuffer.h"
 #include "Vertex.h"
+#include "VAllocator.h"
+#include "VStagingBuffer.h"
+#include "VMemTransferCommandPool.h"
+#include "MeshBufferHandler.h"
 
 class Renderer
 {
@@ -57,7 +61,9 @@ private:
 
 	VFrameBufferHandler frameBufferHandler;
 
-	VCommandPool commandPool;
+	VCommandPool renderCommandPool;
+
+	VMemTransferCommandPool copyCommandPool;
 
 	VSyncObjects syncObjects;
 
@@ -72,8 +78,10 @@ private:
 	void recreateSwapChain();
 
 
+	VAllocator allocator;
 
-	VBuffer* vertexBuffer;
+	MeshBufferHandler* meshBufferHandler;
+
 
 	const std::vector<Vertex> vertices = {
 	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},

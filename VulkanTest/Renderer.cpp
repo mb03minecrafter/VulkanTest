@@ -16,11 +16,21 @@ Renderer::Renderer() :
 	renderPass(device, swapChain.swapChainImageFormat), 
 	pipeline(device,renderPass, defaultShaderGroup, swapChain.swapChainExtent),
 	frameBufferHandler(device, renderPass, swapChain.swapChainImageViews, swapChain.swapChainExtent),
-	commandPool(device, physicalDevice.pickedQueueFamilyIndices),
-	syncObjects(device, MAX_FRAMES_IN_FLIGHT)
+	renderCommandPool(device, physicalDevice.pickedQueueFamilyIndices, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT),
+	syncObjects(device, MAX_FRAMES_IN_FLIGHT),
+	allocator(instance, device, physicalDevice),
+
+	copyCommandPool(device, physicalDevice.pickedQueueFamilyIndices, device.getGraphicsQueue())
+
+
 {
-	vertexBuffer = new VBuffer(device, physicalDevice, (VkDeviceSize)(vertices.size() * sizeof(vertices[0])), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, vertices);
-	//test additional push
+
+
+	meshBufferHandler = new MeshBufferHandler(allocator, (VkDeviceSize)(vertices.size() * sizeof(vertices[0])));
+	meshBufferHandler->stagingBuffer->copyMemoryIntoBuffer(vertices.data(), sizeof(vertices[0]) * vertices.size());
+
+	meshBufferHandler->transferStagingBuffer(copyCommandPool);
+
 	createCommandBuffer();
 }
 
@@ -32,12 +42,17 @@ bool Renderer::shouldWindowClose()
 void Renderer::cleanUp()
 {
 
-	vertexBuffer->cleanUp();
 
-	delete vertexBuffer;
 
+	meshBufferHandler->cleanUp();
+	delete meshBufferHandler;
+
+
+	allocator.cleanUp();
 	syncObjects.cleanUp();
-	commandPool.cleanUp();
+
+	copyCommandPool.cleanUp();
+	renderCommandPool.cleanUp();
 
 	frameBufferHandler.cleanUp();
 
@@ -159,7 +174,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 
-	VkBuffer vertexBuffers[] = { *vertexBuffer };
+	VkBuffer vertexBuffers[] = { *meshBufferHandler->vertexBuffer };
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
@@ -199,7 +214,7 @@ void Renderer::createCommandBuffer()
 	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = commandPool;
+	allocInfo.commandPool = renderCommandPool;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 

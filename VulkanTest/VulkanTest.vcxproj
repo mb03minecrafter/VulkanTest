@@ -136,27 +136,33 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MeshBufferHandler.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderGroup.cpp" />
+    <ClCompile Include="VAllocator.cpp" />
     <ClCompile Include="VBuffer.cpp" />
     <ClCompile Include="VCommandPool.cpp" />
     <ClCompile Include="VDebugManager.cpp" />
     <ClCompile Include="VDevice.cpp" />
     <ClCompile Include="VFrameBufferHandler.cpp" />
     <ClCompile Include="VInstance.cpp" />
+    <ClCompile Include="VMemTransferCommandPool.cpp" />
     <ClCompile Include="VPhysicalDevice.cpp" />
     <ClCompile Include="VPipeline.cpp" />
     <ClCompile Include="VRenderPass.cpp" />
+    <ClCompile Include="VStagingBuffer.cpp" />
     <ClCompile Include="VSurface.cpp" />
     <ClCompile Include="VSwapChain.cpp" />
     <ClCompile Include="VSyncObjects.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MeshBufferHandler.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderGroup.h" />
+    <ClInclude Include="VAllocator.h" />
     <ClInclude Include="VBuffer.h" />
     <ClInclude Include="VCommandPool.h" />
     <ClInclude Include="VDebugManager.h" />
@@ -165,10 +171,12 @@
     <ClInclude Include="VFrameBufferHandler.h" />
     <ClInclude Include="VInstance.h" />
     <ClInclude Include="vk_mem_alloc.h" />
+    <ClInclude Include="VMemTransferCommandPool.h" />
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPhysicalDevice.h" />
     <ClInclude Include="VPipeline.h" />
     <ClInclude Include="VRenderPass.h" />
+    <ClInclude Include="VStagingBuffer.h" />
     <ClInclude Include="VSurface.h" />
     <ClInclude Include="VSwapChain.h" />
     <ClInclude Include="VSyncObjects.h" />

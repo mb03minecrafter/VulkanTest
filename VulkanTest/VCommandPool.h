@@ -6,7 +6,7 @@
 class VCommandPool : VObject
 {
 public:
-	VCommandPool(VkDevice device, QueueFamilyIndices indices);
+	VCommandPool(VkDevice device, QueueFamilyIndices indices, VkCommandPoolCreateFlags flags);
 	void cleanUp();
 
 	operator VkCommandPool() const {
@@ -14,11 +14,12 @@ public:
 	}
 
 private:
-	VkDevice device;
 
 	VkCommandPoolCreateInfo poolInfo{};
-	VkCommandPool commandPool;
 
+protected:
+	VkDevice device;
+	VkCommandPool commandPool;
 
 
 };
