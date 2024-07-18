@@ -32,7 +32,9 @@ public:
 
 	QueueFamilyIndices pickedQueueFamilyIndices;
 
-	operator VkPhysicalDevice() const {
+	
+
+	VkPhysicalDevice getPhysicalDevice() {
 		return physicalDevice;
 	}
 

@@ -5,38 +5,41 @@
 
 
 
-Renderer::Renderer() :
-	window(800, 600, (char*)"test", this),
-	debugManager(instance.enableValidationLayers, instance),
-	surface(instance, window),
-	physicalDevice(instance, surface)
-
-
-
+Renderer::Renderer() 
 {
+	window = std::make_unique<Window>(800, 600, (char*)"test", this);
 
-	device = std::make_unique<VDevice>(instance, physicalDevice, physicalDevice.pickedQueueFamilyIndices);
-	swapChain = std::make_unique<VSwapChain>(*device, physicalDevice, surface, window, physicalDevice.pickedQueueFamilyIndices);
-	defaultShaderGroup = std::make_unique<ShaderGroup>(*device, "shaders/vert.spv", "shaders/frag.spv");
-	descriptorSetLayout = std::make_unique<VDescriptorSetLayout>(*device);
+	instance = std::make_unique<VInstance>();
+	debugManager = std::make_unique<VDebugManager>(instance->enableValidationLayers, instance->getInstance());
 
+	surface = std::make_unique<VSurface>(instance->getInstance(), window->getWindowPtr());
+	physicalDevice = std::make_unique<VPhysicalDevice>(instance->getInstance(), surface->getSurface());
 
-	allocator = std::make_unique<VAllocator>(instance, *device, physicalDevice);
-	renderCommandPool = std::make_unique<VCommandPool>(*device, physicalDevice.pickedQueueFamilyIndices, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-	copyCommandPool = std::make_unique<VMemTransferCommandPool>(*device, physicalDevice.pickedQueueFamilyIndices, device->getGraphicsQueue());
-
-
-	renderPass = std::make_unique<VRenderPass>(*device, swapChain->swapChainImageFormat);
-
-	pipeline = std::make_unique<VPipeline>(*device, *renderPass, *defaultShaderGroup, swapChain->swapChainExtent, *descriptorSetLayout);
-	frameBufferHandler = std::make_unique<VFrameBufferHandler>(*device, *renderPass, swapChain->swapChainImageViews, swapChain->swapChainExtent);
-
-	syncObjects = std::make_unique<VSyncObjects>(*device, MAX_FRAMES_IN_FLIGHT);
+	device = std::make_unique<VDevice>(*instance, physicalDevice->getPhysicalDevice(), physicalDevice->pickedQueueFamilyIndices);
+	swapChain = std::make_unique<VSwapChain>(device->getDevice(), physicalDevice->getPhysicalDevice(), surface->getSurface(), window->getWindowPtr(), physicalDevice->pickedQueueFamilyIndices);
+	defaultShaderGroup = std::make_unique<ShaderGroup>(device->getDevice(), "shaders/vert.spv", "shaders/frag.spv");
+	descriptorSetLayout = std::make_unique<VDescriptorSetLayout>(device->getDevice());
 
 
+	allocator = std::make_unique<VAllocator>(instance->getInstance(), device->getDevice(), physicalDevice->getPhysicalDevice());
+	renderCommandPool = std::make_unique<VCommandPool>(device->getDevice(), physicalDevice->pickedQueueFamilyIndices, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+	copyCommandPool = std::make_unique<VMemTransferCommandPool>(device->getDevice(), physicalDevice->pickedQueueFamilyIndices, device->getGraphicsQueue());
+
+
+	renderPass = std::make_unique<VRenderPass>(device->getDevice(), swapChain->swapChainImageFormat);
+
+	pipeline = std::make_unique<VPipeline>(device->getDevice(), renderPass->getRenderPass(), *defaultShaderGroup, swapChain->swapChainExtent, descriptorSetLayout->getDescriptorSetLayout());
+	frameBufferHandler = std::make_unique<VFrameBufferHandler>(device->getDevice(), renderPass->getRenderPass(), swapChain->swapChainImageViews, swapChain->swapChainExtent);
+
+	syncObjects = std::make_unique<VSyncObjects>(device->getDevice(), MAX_FRAMES_IN_FLIGHT);
+
+	uniformBufferHandler = std::make_unique<UniformBufferHandler>(allocator->getAllocator(), swapChain->swapChainExtent, MAX_FRAMES_IN_FLIGHT);
 	
+	descriptorPool = std::make_unique<VDescriptorPool>(device->getDevice(), MAX_FRAMES_IN_FLIGHT);
+	descriptorSets = std::make_unique<VDescriptorSets>(device->getDevice(), *descriptorPool, descriptorSetLayout->getDescriptorSetLayout(), uniformBufferHandler->buffers, MAX_FRAMES_IN_FLIGHT);
 
-	meshBufferHandler = new MeshBufferHandler(*allocator, vertices, indices);
+
+	meshBufferHandler = new MeshBufferHandler(allocator->getAllocator(), vertices, indices);
 	meshBufferHandler->transferStagingBuffer(*copyCommandPool);
 
 	createCommandBuffer();
@@ -44,7 +47,7 @@ Renderer::Renderer() :
 
 bool Renderer::shouldWindowClose()
 {
-	return window.windowShouldClose();
+	return window->windowShouldClose();
 }
 
 void Renderer::cleanUp()
@@ -55,8 +58,8 @@ void Renderer::cleanUp()
 	meshBufferHandler->cleanUp();
 	delete meshBufferHandler;
 
+	descriptorPool->cleanUp();
 
-	allocator->cleanUp();
 	syncObjects->cleanUp();
 
 	copyCommandPool->cleanUp();
@@ -64,24 +67,29 @@ void Renderer::cleanUp()
 
 	frameBufferHandler->cleanUp();
 
+	uniformBufferHandler->cleanUp();
+
 	descriptorSetLayout->cleanUp();
+
+
+	allocator->cleanUp();
 
 	pipeline->cleanUp();
 	renderPass->cleanUp();
 	swapChain->cleanUp();
 	device->cleanUp();
-	surface.cleanUp();
-	debugManager.cleanUp();
-	instance.cleanUp();
-	window.cleanUp();
+	surface->cleanUp();
+	debugManager->cleanUp();
+	instance->cleanUp();
+	window->cleanUp();
 }
 
 void Renderer::drawFrame()
 {
-	vkWaitForFences(*device, 1, syncObjects->getInFlightFencePtr(currentFrame), VK_TRUE, UINT64_MAX);
+	vkWaitForFences(device->getDevice(), 1, syncObjects->getInFlightFencePtr(currentFrame), VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(*device, *swapChain, UINT64_MAX, syncObjects->getImageAvailableSemaphore(currentFrame), VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(device->getDevice(), *swapChain, UINT64_MAX, syncObjects->getImageAvailableSemaphore(currentFrame), VK_NULL_HANDLE, &imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
@@ -91,7 +99,10 @@ void Renderer::drawFrame()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	vkResetFences(*device, 1, syncObjects->getInFlightFencePtr(currentFrame));
+	uniformBufferHandler->updateUniformBuffer(currentFrame);
+
+
+	vkResetFences(device->getDevice(), 1, syncObjects->getInFlightFencePtr(currentFrame));
 
 
 	vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
@@ -155,7 +166,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = *renderPass;
+	renderPassInfo.renderPass = renderPass->getRenderPass();
 	renderPassInfo.framebuffer = frameBufferHandler->getFrameBuffer(imageIndex);
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = swapChain->swapChainExtent;
@@ -166,7 +177,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipeline());
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -189,6 +200,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(commandBuffer, *meshBufferHandler->indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipelineLayout(), 0, 1, descriptorSets->getDescriptorSet(currentFrame), 0, nullptr);
 
 	vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
@@ -204,13 +216,13 @@ void Renderer::recreateSwapChain()
 {
 
 	int width = 0, height = 0;
-	glfwGetFramebufferSize(window, &width, &height);
+	glfwGetFramebufferSize(window->getWindowPtr(), &width, &height);
 	while (width == 0 || height == 0) {
-		glfwGetFramebufferSize(window, &width, &height);
+		glfwGetFramebufferSize(window->getWindowPtr(), &width, &height);
 		glfwWaitEvents();
 	}
 
-	vkDeviceWaitIdle(*device);
+	vkDeviceWaitIdle(device->getDevice());
 
 	frameBufferHandler->cleanUp();
 	swapChain->cleanUp();
@@ -230,7 +242,7 @@ void Renderer::createCommandBuffer()
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-	if (vkAllocateCommandBuffers(*device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(device->getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
 }

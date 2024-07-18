@@ -11,13 +11,14 @@ public:
 	VAllocator(VkInstance instance, VkDevice device, VkPhysicalDevice physicalDevice);
 	VmaVulkanFunctions vulkanFunctions = {};
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
-	VmaAllocator allocator;
 
-	operator VmaAllocator() const {
+	VmaAllocator getAllocator() {
 		return allocator;
 	}
 
 	void cleanUp();
 private:
+	VmaAllocator allocator;
+
 };
 

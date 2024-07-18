@@ -8,19 +8,25 @@ class VBuffer : VObject
 {
 public:
 
-	VBuffer(VmaAllocator allocator, VkDeviceSize size, int usage);
+	VBuffer(VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage memUsage, VmaAllocationCreateFlags flags);
 	virtual void cleanUp();
 
 	operator VkBuffer() const {
 		return buffer;
 	}
 
+	void* getMappedData() {
+		return allocInfo.pMappedData;
+	}
+
 private:
 
 	VkBufferCreateInfo bufferInfo{};
 
-
-	VmaAllocationCreateInfo allocInfo;
+	VmaAllocationInfo allocInfo;
+	
+	VmaAllocationCreateInfo allocCreateInfo;
+	
 protected:
 	VkBuffer buffer;
 	VmaAllocator allocator;

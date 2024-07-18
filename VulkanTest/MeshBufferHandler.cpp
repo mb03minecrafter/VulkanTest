@@ -12,8 +12,8 @@ MeshBufferHandler::MeshBufferHandler(VmaAllocator allocator, std::vector<Vertex>
 
 	stagingBuffer = std::make_unique<VStagingBuffer>(allocator, stagingBufferSize);
 
-	vertexBuffer = std::make_unique<VBuffer>(allocator, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-	indexBuffer = std::make_unique<VBuffer>(allocator, vertexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+	vertexBuffer = std::make_unique<VBuffer>(allocator, vertexBufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,0);
+	indexBuffer = std::make_unique<VBuffer>(allocator, vertexBufferSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE,0);
 
 
 	stagingBuffer->copyMemoryIntoBuffer(vertices.data(), 0, vertexBufferSize);

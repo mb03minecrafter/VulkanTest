@@ -20,6 +20,9 @@
 #include "VMemTransferCommandPool.h"
 #include "MeshBufferHandler.h"
 #include "VDescriptorSetLayout.h"
+#include "UniformBufferHandler.h"
+#include "VDescriptorPool.h"
+#include "VDescriptorSets.h"
 
 class Renderer
 {
@@ -33,7 +36,7 @@ public:
 	void drawFrame();
 
 	void deviceWaitIdle() {
-		vkDeviceWaitIdle(*device);
+		vkDeviceWaitIdle(device->getDevice());
 	}
 
 	bool framebufferResized = false;
@@ -44,14 +47,16 @@ private:
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 
 
-	Window window;
+	std::unique_ptr<Window> window;
+	std::unique_ptr<VInstance> instance;
 
 
-	VInstance instance;
-	VDebugManager debugManager;
 
-	VSurface surface;
-	VPhysicalDevice physicalDevice;
+	std::unique_ptr<VDebugManager> debugManager;
+
+	std::unique_ptr<VSurface> surface;
+
+	std::unique_ptr<VPhysicalDevice> physicalDevice;
 
 
 	std::unique_ptr<VDevice> device;
@@ -78,9 +83,17 @@ private:
 	std::unique_ptr<VAllocator> allocator;
 
 
+	std::unique_ptr<UniformBufferHandler> uniformBufferHandler;
+
+	std::unique_ptr<VDescriptorPool> descriptorPool;
+	std::unique_ptr<VDescriptorSets> descriptorSets;
+
 
 
 	std::vector<VkCommandBuffer> commandBuffers;
+	
+	
+
 
 	void createCommandBuffer();
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);

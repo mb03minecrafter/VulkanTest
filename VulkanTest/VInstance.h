@@ -22,9 +22,12 @@ public:
 	};
 
 
-	operator VkInstance() const {
+	
+
+	VkInstance getInstance() {
 		return instance;
 	}
+
 
 private:
 	VkInstance instance;

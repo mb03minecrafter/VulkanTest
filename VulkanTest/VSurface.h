@@ -22,7 +22,7 @@ public:
 
 	void cleanUp();
 
-	operator VkSurfaceKHR() const {
+	VkSurfaceKHR getSurface() {
 		return surface;
 	}
 

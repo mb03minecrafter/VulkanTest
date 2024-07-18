@@ -10,7 +10,9 @@ public:
 
 	void cleanUp();
 
-	operator VkRenderPass() const {
+	
+
+	VkRenderPass getRenderPass() {
 		return renderPass;
 	}
 

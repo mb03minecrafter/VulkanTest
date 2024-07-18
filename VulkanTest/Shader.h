@@ -7,6 +7,7 @@ class Shader : VObject
 {
 
 public:
+
 	Shader(VkDevice device, std::string& filename, VkShaderStageFlagBits stage);
 
 	void cleanUp();

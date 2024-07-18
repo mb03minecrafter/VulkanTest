@@ -10,9 +10,11 @@ public:
 	void cleanUp();
 	bool windowShouldClose();
 
-	operator GLFWwindow* () const {
+	GLFWwindow* getWindowPtr() {
 		return window;
 	}
+
+
 
 private:
 	GLFWwindow* window;

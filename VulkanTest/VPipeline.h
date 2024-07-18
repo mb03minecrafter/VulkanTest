@@ -11,9 +11,16 @@ public:
 
 	void cleanUp();
 
-	operator VkPipeline() const {
+	
+
+	VkPipeline getPipeline() {
 		return graphicsPipeline;
 	}
+
+	VkPipelineLayout getPipelineLayout() {
+		return pipelineLayout;
+	}
+
 
 private:
 

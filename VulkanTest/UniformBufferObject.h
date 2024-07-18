@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/ext/matrix_float4x4.hpp>
+#include <ext/matrix_float4x4.hpp>
 
 struct UniformBufferObject {
     glm::mat4 model;

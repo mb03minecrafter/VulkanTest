@@ -8,8 +8,10 @@ public:
 	VDescriptorSetLayout(VkDevice device);
 	void cleanUp();
 
-	operator VkDescriptorSetLayout() const {
+	
+	VkDescriptorSetLayout getDescriptorSetLayout() {
 		return descriptorSetLayout;
+
 	}
 
 private:

@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 
-VBuffer::VBuffer(VmaAllocator allocator, VkDeviceSize size, int usage) 
+VBuffer::VBuffer(VmaAllocator allocator, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage memUsage, VmaAllocationCreateFlags flags) 
 	: allocator(allocator)
 {
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -11,11 +11,11 @@ VBuffer::VBuffer(VmaAllocator allocator, VkDeviceSize size, int usage)
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 
-	allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
-	allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+	allocCreateInfo.usage = memUsage;
+	allocCreateInfo.flags = flags;
 
 
-	vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr);
+	vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
 	
 
 }

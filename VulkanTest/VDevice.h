@@ -11,7 +11,7 @@ public:
 	void cleanUp();
 
 
-	operator VkDevice() const {
+	VkDevice getDevice() {
 		return device;
 	}
 
