@@ -19,6 +19,7 @@
 #include "VStagingBuffer.h"
 #include "VMemTransferCommandPool.h"
 #include "MeshBufferHandler.h"
+#include "VDescriptorSetLayout.h"
 
 class Renderer
 {
@@ -32,7 +33,7 @@ public:
 	void drawFrame();
 
 	void deviceWaitIdle() {
-		vkDeviceWaitIdle(device);
+		vkDeviceWaitIdle(*device);
 	}
 
 	bool framebufferResized = false;
@@ -44,28 +45,39 @@ private:
 
 
 	Window window;
+
+
 	VInstance instance;
 	VDebugManager debugManager;
 
 	VSurface surface;
 	VPhysicalDevice physicalDevice;
 
-	VDevice device;
-	VSwapChain swapChain;
 
-	ShaderGroup defaultShaderGroup;
+	std::unique_ptr<VDevice> device;
 
-	VRenderPass renderPass;
-	VPipeline pipeline;
+	std::unique_ptr<VSwapChain> swapChain;
+
+	std::unique_ptr<ShaderGroup> defaultShaderGroup;
 
 
-	VFrameBufferHandler frameBufferHandler;
+	std::unique_ptr<VRenderPass> renderPass;
+	std::unique_ptr<VDescriptorSetLayout> descriptorSetLayout;
 
-	VCommandPool renderCommandPool;
 
-	VMemTransferCommandPool copyCommandPool;
+	std::unique_ptr<VPipeline> pipeline;
 
-	VSyncObjects syncObjects;
+
+	std::unique_ptr<VFrameBufferHandler> frameBufferHandler;
+
+	std::unique_ptr<VSyncObjects> syncObjects;
+
+	std::unique_ptr<VCommandPool> renderCommandPool;
+	std::unique_ptr<VMemTransferCommandPool> copyCommandPool;
+
+	std::unique_ptr<VAllocator> allocator;
+
+
 
 
 	std::vector<VkCommandBuffer> commandBuffers;
@@ -78,16 +90,21 @@ private:
 	void recreateSwapChain();
 
 
-	VAllocator allocator;
 
 	MeshBufferHandler* meshBufferHandler;
 
 
 	const std::vector<Vertex> vertices = {
-	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 	};
+
+	const std::vector<uint16_t> indices = {
+	0, 1, 2, 2, 3, 0
+	};
+
 };
 
 

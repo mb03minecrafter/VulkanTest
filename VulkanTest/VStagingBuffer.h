@@ -12,7 +12,7 @@ public:
 	}
 	
 
-	void copyMemoryIntoBuffer(const void* srcPtr, VkDeviceSize size);
+	void copyMemoryIntoBuffer(const void* srcPtr, VkDeviceSize offset, VkDeviceSize size);
 
 private:
 

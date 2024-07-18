@@ -7,7 +7,7 @@
 class VPipeline : VObject
 {
 public:
-	VPipeline(VkDevice device, VkRenderPass renderPass, ShaderGroup shaderGroup, VkExtent2D swapChainExtent);
+	VPipeline(VkDevice device, VkRenderPass renderPass, ShaderGroup shaderGroup, VkExtent2D swapChainExtent, VkDescriptorSetLayout descriptorSetLayout);
 
 	void cleanUp();
 
@@ -34,6 +34,7 @@ private:
 	VkPipelineLayout pipelineLayout;
 
 
+	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 
 
 	VkPipelineDynamicStateCreateInfo dynamicState{};
@@ -51,7 +52,6 @@ private:
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	VkPipelineColorBlendStateCreateInfo colorBlending{};
 
-	void configDynamicState();
-	void configVertexInputInfo();
+	
 };
 

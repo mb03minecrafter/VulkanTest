@@ -12,7 +12,6 @@ Renderer renderer;
 
 
 
-
 void mainLoop() {
     while (!renderer.shouldWindowClose()) {
         glfwPollEvents();

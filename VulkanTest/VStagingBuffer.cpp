@@ -16,9 +16,9 @@ void VStagingBuffer::cleanUp()
 
 
 
-void VStagingBuffer::copyMemoryIntoBuffer(const void* srcPtr, VkDeviceSize size)
+void VStagingBuffer::copyMemoryIntoBuffer(const void* srcPtr, VkDeviceSize offset, VkDeviceSize size)
 {
-	vmaCopyMemoryToAllocation(allocator, srcPtr, allocation, 0, size);
+	vmaCopyMemoryToAllocation(allocator, srcPtr, allocation, offset, size);
 }
 
 

@@ -9,27 +9,35 @@ Renderer::Renderer() :
 	window(800, 600, (char*)"test", this),
 	debugManager(instance.enableValidationLayers, instance),
 	surface(instance, window),
-	physicalDevice(instance, surface),
-	device(instance, physicalDevice, physicalDevice.pickedQueueFamilyIndices),
-	swapChain(device, physicalDevice, surface, window, physicalDevice.pickedQueueFamilyIndices),
-	defaultShaderGroup(device, "shaders/vert.spv", "shaders/frag.spv"),
-	renderPass(device, swapChain.swapChainImageFormat), 
-	pipeline(device,renderPass, defaultShaderGroup, swapChain.swapChainExtent),
-	frameBufferHandler(device, renderPass, swapChain.swapChainImageViews, swapChain.swapChainExtent),
-	renderCommandPool(device, physicalDevice.pickedQueueFamilyIndices, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT),
-	syncObjects(device, MAX_FRAMES_IN_FLIGHT),
-	allocator(instance, device, physicalDevice),
+	physicalDevice(instance, surface)
 
-	copyCommandPool(device, physicalDevice.pickedQueueFamilyIndices, device.getGraphicsQueue())
 
 
 {
 
+	device = std::make_unique<VDevice>(instance, physicalDevice, physicalDevice.pickedQueueFamilyIndices);
+	swapChain = std::make_unique<VSwapChain>(*device, physicalDevice, surface, window, physicalDevice.pickedQueueFamilyIndices);
+	defaultShaderGroup = std::make_unique<ShaderGroup>(*device, "shaders/vert.spv", "shaders/frag.spv");
+	descriptorSetLayout = std::make_unique<VDescriptorSetLayout>(*device);
 
-	meshBufferHandler = new MeshBufferHandler(allocator, (VkDeviceSize)(vertices.size() * sizeof(vertices[0])));
-	meshBufferHandler->stagingBuffer->copyMemoryIntoBuffer(vertices.data(), sizeof(vertices[0]) * vertices.size());
 
-	meshBufferHandler->transferStagingBuffer(copyCommandPool);
+	allocator = std::make_unique<VAllocator>(instance, *device, physicalDevice);
+	renderCommandPool = std::make_unique<VCommandPool>(*device, physicalDevice.pickedQueueFamilyIndices, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+	copyCommandPool = std::make_unique<VMemTransferCommandPool>(*device, physicalDevice.pickedQueueFamilyIndices, device->getGraphicsQueue());
+
+
+	renderPass = std::make_unique<VRenderPass>(*device, swapChain->swapChainImageFormat);
+
+	pipeline = std::make_unique<VPipeline>(*device, *renderPass, *defaultShaderGroup, swapChain->swapChainExtent, *descriptorSetLayout);
+	frameBufferHandler = std::make_unique<VFrameBufferHandler>(*device, *renderPass, swapChain->swapChainImageViews, swapChain->swapChainExtent);
+
+	syncObjects = std::make_unique<VSyncObjects>(*device, MAX_FRAMES_IN_FLIGHT);
+
+
+	
+
+	meshBufferHandler = new MeshBufferHandler(*allocator, vertices, indices);
+	meshBufferHandler->transferStagingBuffer(*copyCommandPool);
 
 	createCommandBuffer();
 }
@@ -48,19 +56,20 @@ void Renderer::cleanUp()
 	delete meshBufferHandler;
 
 
-	allocator.cleanUp();
-	syncObjects.cleanUp();
+	allocator->cleanUp();
+	syncObjects->cleanUp();
 
-	copyCommandPool.cleanUp();
-	renderCommandPool.cleanUp();
+	copyCommandPool->cleanUp();
+	renderCommandPool->cleanUp();
 
-	frameBufferHandler.cleanUp();
+	frameBufferHandler->cleanUp();
 
-	pipeline.cleanUp();
-	renderPass.cleanUp();
-	defaultShaderGroup.cleanUp();
-	swapChain.cleanUp();
-	device.cleanUp();
+	descriptorSetLayout->cleanUp();
+
+	pipeline->cleanUp();
+	renderPass->cleanUp();
+	swapChain->cleanUp();
+	device->cleanUp();
 	surface.cleanUp();
 	debugManager.cleanUp();
 	instance.cleanUp();
@@ -69,10 +78,10 @@ void Renderer::cleanUp()
 
 void Renderer::drawFrame()
 {
-	vkWaitForFences(device, 1, syncObjects.getInFlightFencePtr(currentFrame), VK_TRUE, UINT64_MAX);
+	vkWaitForFences(*device, 1, syncObjects->getInFlightFencePtr(currentFrame), VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, syncObjects.getImageAvailableSemaphore(currentFrame), VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(*device, *swapChain, UINT64_MAX, syncObjects->getImageAvailableSemaphore(currentFrame), VK_NULL_HANDLE, &imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
@@ -82,7 +91,7 @@ void Renderer::drawFrame()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	vkResetFences(device, 1, syncObjects.getInFlightFencePtr(currentFrame));
+	vkResetFences(*device, 1, syncObjects->getInFlightFencePtr(currentFrame));
 
 
 	vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
@@ -91,7 +100,7 @@ void Renderer::drawFrame()
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore waitSemaphores[] = { syncObjects.getImageAvailableSemaphore(currentFrame) };
+	VkSemaphore waitSemaphores[] = { syncObjects->getImageAvailableSemaphore(currentFrame) };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
@@ -100,11 +109,11 @@ void Renderer::drawFrame()
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
-	VkSemaphore signalSemaphores[] = { syncObjects.getRenderFinishedSemaphore(currentFrame)};
+	VkSemaphore signalSemaphores[] = { syncObjects->getRenderFinishedSemaphore(currentFrame)};
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, syncObjects.getInFlightFence(currentFrame)) != VK_SUCCESS) {
+	if (vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, syncObjects->getInFlightFence(currentFrame)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
@@ -114,13 +123,13 @@ void Renderer::drawFrame()
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
-	VkSwapchainKHR swapChains[] = { swapChain };
+	VkSwapchainKHR swapChains[] = { *swapChain };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
 
 	presentInfo.pImageIndices = &imageIndex;
 
-	result = vkQueuePresentKHR(device.getPresentQueue(), &presentInfo);
+	result = vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
 		framebufferResized = false;
@@ -146,10 +155,10 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = renderPass;
-	renderPassInfo.framebuffer = frameBufferHandler.getFrameBuffer(imageIndex);
+	renderPassInfo.renderPass = *renderPass;
+	renderPassInfo.framebuffer = frameBufferHandler->getFrameBuffer(imageIndex);
 	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChain.swapChainExtent;
+	renderPassInfo.renderArea.extent = swapChain->swapChainExtent;
 
 	VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 	renderPassInfo.clearValueCount = 1;
@@ -157,28 +166,31 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = (float)swapChain.swapChainExtent.width;
-	viewport.height = (float)swapChain.swapChainExtent.height;
+	viewport.width = (float)swapChain->swapChainExtent.width;
+	viewport.height = (float)swapChain->swapChainExtent.height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 	VkRect2D scissor{};
 	scissor.offset = { 0, 0 };
-	scissor.extent = swapChain.swapChainExtent;
+	scissor.extent = swapChain->swapChainExtent;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 
 	VkBuffer vertexBuffers[] = { *meshBufferHandler->vertexBuffer };
 	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+	vkCmdBindIndexBuffer(commandBuffer, *meshBufferHandler->indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+
+	vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -198,13 +210,13 @@ void Renderer::recreateSwapChain()
 		glfwWaitEvents();
 	}
 
-	vkDeviceWaitIdle(device);
+	vkDeviceWaitIdle(*device);
 
-	frameBufferHandler.cleanUp();
-	swapChain.cleanUp();
+	frameBufferHandler->cleanUp();
+	swapChain->cleanUp();
 
-	swapChain.recreate();
-	frameBufferHandler.recreate();
+	swapChain->recreate();
+	frameBufferHandler->recreate();
 
 
 }
@@ -214,11 +226,11 @@ void Renderer::createCommandBuffer()
 	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = renderCommandPool;
+	allocInfo.commandPool = *renderCommandPool;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+	if (vkAllocateCommandBuffers(*device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
 }

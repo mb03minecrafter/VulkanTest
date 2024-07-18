@@ -6,20 +6,25 @@
 class MeshBufferHandler
 {
 public:
-	MeshBufferHandler(VmaAllocator allocator, VkDeviceSize size);
+	MeshBufferHandler(VmaAllocator allocator, std::vector<Vertex> vertices, std::vector< uint16_t> indices);
 
 	void cleanUp();
 
 	std::unique_ptr<VStagingBuffer> stagingBuffer;
 	std::unique_ptr<VBuffer> vertexBuffer;
+	std::unique_ptr<VBuffer> indexBuffer;
 
 	void transferStagingBuffer(VMemTransferCommandPool commandPool);
 
 private:
 
-	VkDeviceSize size;
-
+	VkDeviceSize vertexBufferSize; 
+	VkDeviceSize indexBufferSize; 
+	VkDeviceSize stagingBufferSize; 
 	void clearStagingBuffer();
 
+
+	std::vector<Vertex>& vertices;
+	std::vector< uint16_t>& indices;
 };
 
