@@ -4,12 +4,13 @@
 #include <vector>
 #include "VBuffer.h"
 #include <iostream>
+#include "VTextureImage.h"
 
 
 class VDescriptorSets : VObject
 {
 public:
-	VDescriptorSets(VkDevice device, VkDescriptorPool descriptorPool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VBuffer>& buffers, int MAX_FRAMES_IN_FLIGHT);
+	VDescriptorSets(VkDevice device, VkDescriptorPool descriptorPool, VkDescriptorSetLayout descriptorSetLayout, std::vector<VBuffer>* buffers, VkImageView textureImageView, VkSampler textureSampler, int MAX_FRAMES_IN_FLIGHT);
 
 	void cleanUp() {
 	};

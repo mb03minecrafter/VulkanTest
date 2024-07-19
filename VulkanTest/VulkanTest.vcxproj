@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glm;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;C:\Users\mbickham\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glm;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;C:\Users\mbickham\VulkanSDK\1.3.283.0\Include;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -122,7 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glm;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;C:\Users\mbickham\VulkanSDK\1.3.283.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glm;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;C:\Users\mbickham\VulkanSDK\1.3.283.0\Include;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -145,6 +145,7 @@
     <ClCompile Include="VBuffer.cpp" />
     <ClCompile Include="VCommandPool.cpp" />
     <ClCompile Include="VDebugManager.cpp" />
+    <ClCompile Include="VDepth.cpp" />
     <ClCompile Include="VDescriptorPool.cpp" />
     <ClCompile Include="VDescriptorSetLayout.cpp" />
     <ClCompile Include="VDescriptorSets.cpp" />
@@ -159,9 +160,12 @@
     <ClCompile Include="VSurface.cpp" />
     <ClCompile Include="VSwapChain.cpp" />
     <ClCompile Include="VSyncObjects.cpp" />
+    <ClCompile Include="VTextureImage.cpp" />
+    <ClCompile Include="VTextureSampler.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="MeshBufferHandler.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
@@ -172,6 +176,7 @@
     <ClInclude Include="VBuffer.h" />
     <ClInclude Include="VCommandPool.h" />
     <ClInclude Include="VDebugManager.h" />
+    <ClInclude Include="VDepth.h" />
     <ClInclude Include="VDescriptorPool.h" />
     <ClInclude Include="VDescriptorSetLayout.h" />
     <ClInclude Include="VDescriptorSets.h" />
@@ -189,6 +194,8 @@
     <ClInclude Include="VSurface.h" />
     <ClInclude Include="VSwapChain.h" />
     <ClInclude Include="VSyncObjects.h" />
+    <ClInclude Include="VTextureImage.h" />
+    <ClInclude Include="VTextureSampler.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

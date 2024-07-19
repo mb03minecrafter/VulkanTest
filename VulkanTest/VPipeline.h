@@ -7,7 +7,7 @@
 class VPipeline : VObject
 {
 public:
-	VPipeline(VkDevice device, VkRenderPass renderPass, ShaderGroup shaderGroup, VkExtent2D swapChainExtent, VkDescriptorSetLayout descriptorSetLayout);
+	VPipeline(VkDevice device, VkRenderPass renderPass, ShaderGroup shaderGroup, VkDescriptorSetLayout descriptorSetLayout);
 
 	void cleanUp();
 

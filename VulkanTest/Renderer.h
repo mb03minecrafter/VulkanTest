@@ -23,6 +23,10 @@
 #include "UniformBufferHandler.h"
 #include "VDescriptorPool.h"
 #include "VDescriptorSets.h"
+#include "VTextureImage.h"
+#include "VTextureSampler.h"
+#include "VDepth.h"
+#include "Camera.h"
 
 class Renderer
 {
@@ -41,7 +45,11 @@ public:
 
 	bool framebufferResized = false;
 
+	std::unique_ptr<Camera> camera;
 
+	// timing
+	float deltaTime = 0.0f;	// time between current frame and last frame
+	float lastFrame = 0.0f;
 private:
 	
 	const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -90,10 +98,15 @@ private:
 
 
 
+	std::unique_ptr<VTextureImage> textureImage;
+	std::unique_ptr<VTextureSampler> textureSampler;
+
+	std::unique_ptr<VDepth> depth;
+
 	std::vector<VkCommandBuffer> commandBuffers;
 	
 	
-
+	
 
 	void createCommandBuffer();
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
@@ -108,15 +121,47 @@ private:
 
 
 	const std::vector<Vertex> vertices = {
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+	 {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+	{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+	{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+	{{-2.5f, -2.5f, -2.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+	{{2.5f, -2.5f, -2.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+	{{2.5f, 2.5f, -2.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+	{{-2.5f, 2.5f, -2.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 	};
 
 	const std::vector<uint16_t> indices = {
-	0, 1, 2, 2, 3, 0
+	0, 1, 2, 2, 3, 0,
+	4, 5, 6, 6, 7, 4
 	};
+
+
+	void processInput() {
+		if (glfwGetKey(window->getWindowPtr(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
+			glfwSetWindowShouldClose(window->getWindowPtr(), true);
+
+
+		if (glfwGetKey(window->getWindowPtr(), GLFW_KEY_W) == GLFW_PRESS)
+			camera->ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
+		if (glfwGetKey(window->getWindowPtr(), GLFW_KEY_A) == GLFW_PRESS)
+			camera->ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
+		if (glfwGetKey(window->getWindowPtr(), GLFW_KEY_S) == GLFW_PRESS)
+			camera->ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
+		if (glfwGetKey(window->getWindowPtr(), GLFW_KEY_D) == GLFW_PRESS)
+			camera->ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
+
+		if (glfwGetKey(window->getWindowPtr(), GLFW_KEY_SPACE) == GLFW_PRESS)
+			camera->ProcessKeyboard(Camera_Movement::UP, deltaTime);
+
+		if (glfwGetKey(window->getWindowPtr(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+			camera->ProcessKeyboard(Camera_Movement::DOWN, deltaTime);
+
+
+
+
+	}
 
 };
 

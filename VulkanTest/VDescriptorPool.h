@@ -9,14 +9,15 @@ public:
 
 	void cleanUp();
 
-	operator VkDescriptorPool() const {
+	
+
+	VkDescriptorPool getDescriptorPool() {
 		return descriptorPool;
 	}
 
 private:
 	VkDevice device;
 
-	VkDescriptorPoolSize poolSize{};
 	VkDescriptorPoolCreateInfo poolInfo{};
 	VkDescriptorPool descriptorPool;
 

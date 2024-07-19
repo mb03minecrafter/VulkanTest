@@ -13,8 +13,15 @@ public:
 
 
 	void copyVertexIndexBuffer(VkBuffer stagingBuffer, VkBuffer vertexBuffer, VkBuffer indexBuffer, VkBufferCopy vertexCopy, VkBufferCopy indexCopy);
+	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
 
 private:
 	VkQueue queue;
+
+	VkCommandBuffer beginSingleTimeCommands();
+	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+
 };
 

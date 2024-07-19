@@ -7,7 +7,7 @@
 class VFrameBufferHandler : VObject
 {
 public:
-	VFrameBufferHandler(VkDevice device, VkRenderPass renderPass, std::vector<VkImageView>& swapChainImageViews, VkExtent2D& swapChainExtent);
+	VFrameBufferHandler(VkDevice device, VkRenderPass renderPass, std::vector<VkImageView>* swapChainImageViews, VkExtent2D* swapChainExtent, VkImageView* depthImageView);
 
 	void cleanUp();
 
@@ -22,9 +22,12 @@ private:
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 	VkDevice device;
 	VkRenderPass renderPass;
-	std::vector<VkImageView>& swapChainImageViews;
-	VkExtent2D& swapChainExtent;
+	std::vector<VkImageView>* swapChainImageViews;
+	VkExtent2D* swapChainExtent;
 
-	void createFrameBuffers(VkDevice device, VkRenderPass renderPass, std::vector<VkImageView>& swapChainImageViews, VkExtent2D swapChainExtent);
+	VkImageView* depthImageView;
+
+
+	void createFrameBuffers(VkDevice device, VkRenderPass renderPass, std::vector<VkImageView>* swapChainImageViews, VkExtent2D swapChainExtent, VkImageView depthImageView);
 };
 

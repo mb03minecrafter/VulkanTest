@@ -22,13 +22,28 @@ public:
 
     void createImageViews();
 
-    VkExtent2D swapChainExtent;
-    VkFormat swapChainImageFormat;
-    std::vector<VkImageView> swapChainImageViews;
-
-    operator VkSwapchainKHR() const {
+    
+    VkSwapchainKHR getSwapChain() {
         return swapChain;
     }
+
+    VkFormat getSwapChainImageFormat() {
+        return swapChainImageFormat;
+    }
+
+    VkExtent2D* getSwapChainExtentPtr() {
+        return &swapChainExtent;
+    }
+
+    VkExtent2D getSwapChainExtent() {
+        return swapChainExtent;
+    }
+
+    std::vector<VkImageView>* getSwapChainImageViewsPtr() {
+        return &swapChainImageViews;
+    }
+
+
 
     void recreate();
 
@@ -53,6 +68,10 @@ private:
     void createSwapChain(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, GLFWwindow* window, QueueFamilyIndices indices);
 
 
+    VkExtent2D swapChainExtent;
+    VkFormat swapChainImageFormat;
+
+    std::vector<VkImageView> swapChainImageViews;
 
 };
 

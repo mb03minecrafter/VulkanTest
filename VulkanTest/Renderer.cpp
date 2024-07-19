@@ -1,12 +1,15 @@
 #include "Renderer.h"
 #include "Window.h"
 #include <stdexcept>
-
+#include <array>
 
 
 
 Renderer::Renderer() 
 {
+
+	camera = std::make_unique<Camera>();
+
 	window = std::make_unique<Window>(800, 600, (char*)"test", this);
 
 	instance = std::make_unique<VInstance>();
@@ -25,18 +28,27 @@ Renderer::Renderer()
 	renderCommandPool = std::make_unique<VCommandPool>(device->getDevice(), physicalDevice->pickedQueueFamilyIndices, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 	copyCommandPool = std::make_unique<VMemTransferCommandPool>(device->getDevice(), physicalDevice->pickedQueueFamilyIndices, device->getGraphicsQueue());
 
+	depth = std::make_unique<VDepth>(device->getDevice(), physicalDevice->getPhysicalDevice(), allocator->getAllocator(), swapChain->getSwapChainExtentPtr());
 
-	renderPass = std::make_unique<VRenderPass>(device->getDevice(), swapChain->swapChainImageFormat);
+	renderPass = std::make_unique<VRenderPass>(device->getDevice(), swapChain->getSwapChainImageFormat(), depth->getDepthFormat());
 
-	pipeline = std::make_unique<VPipeline>(device->getDevice(), renderPass->getRenderPass(), *defaultShaderGroup, swapChain->swapChainExtent, descriptorSetLayout->getDescriptorSetLayout());
-	frameBufferHandler = std::make_unique<VFrameBufferHandler>(device->getDevice(), renderPass->getRenderPass(), swapChain->swapChainImageViews, swapChain->swapChainExtent);
+	pipeline = std::make_unique<VPipeline>(device->getDevice(), renderPass->getRenderPass(), *defaultShaderGroup, descriptorSetLayout->getDescriptorSetLayout());
+	frameBufferHandler = std::make_unique<VFrameBufferHandler>(device->getDevice(), renderPass->getRenderPass(), swapChain->getSwapChainImageViewsPtr(), swapChain->getSwapChainExtentPtr(), depth->getDepthImageViewPtr());
 
 	syncObjects = std::make_unique<VSyncObjects>(device->getDevice(), MAX_FRAMES_IN_FLIGHT);
 
-	uniformBufferHandler = std::make_unique<UniformBufferHandler>(allocator->getAllocator(), swapChain->swapChainExtent, MAX_FRAMES_IN_FLIGHT);
+	uniformBufferHandler = std::make_unique<UniformBufferHandler>(allocator->getAllocator(), swapChain->getSwapChainExtentPtr(), MAX_FRAMES_IN_FLIGHT);
 	
+
+	textureImage = std::make_unique<VTextureImage>(device->getDevice(), "textures/brick.png", allocator->getAllocator(), (*copyCommandPool));
+
+	textureSampler = std::make_unique<VTextureSampler>(device->getDevice(), physicalDevice->getPhysicalDevice());
+
 	descriptorPool = std::make_unique<VDescriptorPool>(device->getDevice(), MAX_FRAMES_IN_FLIGHT);
-	descriptorSets = std::make_unique<VDescriptorSets>(device->getDevice(), *descriptorPool, descriptorSetLayout->getDescriptorSetLayout(), uniformBufferHandler->buffers, MAX_FRAMES_IN_FLIGHT);
+	descriptorSets = std::make_unique<VDescriptorSets>(device->getDevice(), descriptorPool->getDescriptorPool(), descriptorSetLayout->getDescriptorSetLayout(), uniformBufferHandler->getBuffersPtr(), textureImage->getTextureImageView(), textureSampler->getTextureSampler(), MAX_FRAMES_IN_FLIGHT);
+
+
+	
 
 
 	meshBufferHandler = new MeshBufferHandler(allocator->getAllocator(), vertices, indices);
@@ -57,6 +69,12 @@ void Renderer::cleanUp()
 
 	meshBufferHandler->cleanUp();
 	delete meshBufferHandler;
+
+
+	textureSampler->cleanUp();
+	textureImage->cleanUp();
+
+	depth->cleanUp();
 
 	descriptorPool->cleanUp();
 
@@ -86,10 +104,19 @@ void Renderer::cleanUp()
 
 void Renderer::drawFrame()
 {
+
+
+	float currentFrameTime = static_cast<float>(glfwGetTime());
+	deltaTime = currentFrameTime - lastFrame;
+	lastFrame = currentFrameTime;
+
+
+	processInput();
+
 	vkWaitForFences(device->getDevice(), 1, syncObjects->getInFlightFencePtr(currentFrame), VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(device->getDevice(), *swapChain, UINT64_MAX, syncObjects->getImageAvailableSemaphore(currentFrame), VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(device->getDevice(), swapChain->getSwapChain(), UINT64_MAX, syncObjects->getImageAvailableSemaphore(currentFrame), VK_NULL_HANDLE, &imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
@@ -99,7 +126,7 @@ void Renderer::drawFrame()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	uniformBufferHandler->updateUniformBuffer(currentFrame);
+	uniformBufferHandler->updateUniformBuffer(currentFrame, *camera);
 
 
 	vkResetFences(device->getDevice(), 1, syncObjects->getInFlightFencePtr(currentFrame));
@@ -134,7 +161,7 @@ void Renderer::drawFrame()
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
-	VkSwapchainKHR swapChains[] = { *swapChain };
+	VkSwapchainKHR swapChains[] = { swapChain->getSwapChain()};
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
 
@@ -164,16 +191,19 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
 
+	std::array<VkClearValue, 2> clearValues{};
+	clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+	clearValues[1].depthStencil = { 1.0f, 0 };
+
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = renderPass->getRenderPass();
 	renderPassInfo.framebuffer = frameBufferHandler->getFrameBuffer(imageIndex);
 	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChain->swapChainExtent;
+	renderPassInfo.renderArea.extent = swapChain->getSwapChainExtent();
 
-	VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
+	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+	renderPassInfo.pClearValues = clearValues.data();
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -182,15 +212,15 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = (float)swapChain->swapChainExtent.width;
-	viewport.height = (float)swapChain->swapChainExtent.height;
+	viewport.width = (float)swapChain->getSwapChainExtentPtr()->width;
+	viewport.height = (float)swapChain->getSwapChainExtentPtr()->height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 	VkRect2D scissor{};
 	scissor.offset = { 0, 0 };
-	scissor.extent = swapChain->swapChainExtent;
+	scissor.extent = (swapChain->getSwapChainExtent());
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 
@@ -224,10 +254,12 @@ void Renderer::recreateSwapChain()
 
 	vkDeviceWaitIdle(device->getDevice());
 
+	depth->cleanUp();
 	frameBufferHandler->cleanUp();
 	swapChain->cleanUp();
 
 	swapChain->recreate();
+	depth->recreate();
 	frameBufferHandler->recreate();
 
 
@@ -238,7 +270,7 @@ void Renderer::createCommandBuffer()
 	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = *renderCommandPool;
+	allocInfo.commandPool = renderCommandPool->getCommandPool();
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 

@@ -6,7 +6,7 @@ class VRenderPass : VObject
 {
 
 public:
-	VRenderPass(VkDevice device, VkFormat format);
+	VRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat);
 
 	void cleanUp();
 
@@ -27,6 +27,10 @@ private:
 
 	VkAttachmentDescription colorAttachment{};
 	VkAttachmentReference colorAttachmentRef{};
+
+	VkAttachmentDescription depthAttachment{};
+	VkAttachmentReference depthAttachmentRef{};
+
 	VkSubpassDescription subpass{};
 
 
