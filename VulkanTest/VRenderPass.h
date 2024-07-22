@@ -1,6 +1,7 @@
 #pragma once
 #include "VObject.h"
 #include "vulkan/vulkan.h"
+#include <array>
 
 class VRenderPass : VObject
 {
@@ -16,6 +17,10 @@ public:
 		return renderPass;
 	}
 
+	VkRenderPass getOffscreenRenderPass() {
+		return offScreenRenderPass;
+	}
+
 private:
 
 
@@ -23,6 +28,7 @@ private:
 	VkDevice device;
 
 	VkRenderPassCreateInfo renderPassInfo{};
+
 	VkRenderPass renderPass;
 
 	VkAttachmentDescription colorAttachment{};
@@ -31,7 +37,44 @@ private:
 	VkAttachmentDescription depthAttachment{};
 	VkAttachmentReference depthAttachmentRef{};
 
+	
+
+
+
 	VkSubpassDescription subpass{};
+
+	void fillColorAttachment(VkFormat colorFormat);
+	void fillDepthAttachment(VkFormat depthFormat);
+
+	std::array<VkSubpassDependency, 2> SetSubpassDependencies();
+
+
+	VkRenderPassCreateInfo offscreenRenderPassInfo{};
+	VkRenderPass offScreenRenderPass;
+	VkSubpassDescription offScreenSubpass;
+
+	std::array<VkSubpassDependency, 2> offScreenSubpassDependencies;
+
+
+
+	void createOffScreenRenderPass(VkFormat format, VkFormat depthFormat);
+
+	void fillOffScreenPositionAttachment(VkFormat positionFormat);
+	void fillOffScreenColorAttachment(VkFormat colorFormat);
+	void fillOffScreenNormalAttachment(VkFormat normalFormat);
+	void fillOffScreenDepthAttachment(VkFormat depthFormat);
+
+	VkAttachmentDescription offscreenPositionAttachment{};
+	VkAttachmentReference offscreenPositionAttachmentRef{};
+
+	VkAttachmentDescription offscreenColorAttachment{};
+	VkAttachmentReference offscreenColorAttachmentRef{};
+
+	VkAttachmentDescription offscreenNormalAttachment{};
+	VkAttachmentReference offscreenNormalAttachmentRef{};
+
+	VkAttachmentDescription offscreenDepthAttachment{};
+	VkAttachmentReference offscreenDepthAttachmentRef{};
 
 
 };

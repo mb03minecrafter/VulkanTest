@@ -2,6 +2,7 @@
 #include "Window.h"
 #include <stdexcept>
 #include <array>
+#include <chrono>
 
 
 
@@ -33,7 +34,7 @@ Renderer::Renderer()
 	renderPass = std::make_unique<VRenderPass>(device->getDevice(), swapChain->getSwapChainImageFormat(), depth->getDepthFormat());
 
 	pipeline = std::make_unique<VPipeline>(device->getDevice(), renderPass->getRenderPass(), *defaultShaderGroup, descriptorSetLayout->getDescriptorSetLayout());
-	frameBufferHandler = std::make_unique<VFrameBufferHandler>(device->getDevice(), renderPass->getRenderPass(), swapChain->getSwapChainImageViewsPtr(), swapChain->getSwapChainExtentPtr(), depth->getDepthImageViewPtr());
+	frameBufferHandler = std::make_unique<VFrameBufferHandler>(device->getDevice(), renderPass->getRenderPass(), renderPass->getOffscreenRenderPass(), swapChain->getSwapChainImageViewsPtr(), swapChain->getSwapChainExtentPtr(), depth->getDepthImageViewPtr());
 
 	syncObjects = std::make_unique<VSyncObjects>(device->getDevice(), MAX_FRAMES_IN_FLIGHT);
 
@@ -191,7 +192,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
 
-	std::array<VkClearValue, 2> clearValues{};
+	std::array<VkClearValue, 3> clearValues{};
 	clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 	clearValues[1].depthStencil = { 1.0f, 0 };
 
@@ -231,6 +232,19 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	vkCmdBindIndexBuffer(commandBuffer, *meshBufferHandler->indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipelineLayout(), 0, 1, descriptorSets->getDescriptorSet(currentFrame), 0, nullptr);
+
+
+
+	//using push constants for model matrix, faster
+	static auto startTime = std::chrono::high_resolution_clock::now();
+
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+	meshPushConstant constant;
+	constant.model = glm::rotate(glm::mat4(1.0f),  time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	vkCmdPushConstants(commandBuffer, pipeline->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(meshPushConstant), &constant);
+	//end push constants
+
 
 	vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 

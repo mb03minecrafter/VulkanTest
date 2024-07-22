@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "vk_mem_alloc.h"
+#include "VImage.h"
+#include <memory>
 
 class VDepth : VObject
 {
@@ -17,7 +19,7 @@ public:
 	}
 
 	VkImageView* getDepthImageViewPtr() {
-		return &depthImageView;
+		return depthImage->getImageViewPtr();
 	}
 
 	void recreate();
@@ -26,11 +28,8 @@ private:
 	VkDevice device;
 	VkPhysicalDevice physicalDevice;
 
-	VkImage depthImage;
-	VkImageViewCreateInfo viewInfo{};
-	VkImageView depthImageView;
+	
 	VkFormat depthFormat;
-
 
 	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
@@ -39,14 +38,10 @@ private:
 
 	VkExtent2D* swapChainExtent;
 
-	VkImageCreateInfo imageInfo = {};
+	
 
+	std::unique_ptr<VImage> depthImage;
 
-	VmaAllocationCreateInfo imageAllocCreateInfo = {};
-	VmaAllocationInfo depthImageAllocInfo = {};
-	VmaAllocation depthImageAlloc;
-
-	VmaAllocator allocator;
 
 };
 

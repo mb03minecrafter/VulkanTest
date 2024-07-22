@@ -151,6 +151,7 @@
     <ClCompile Include="VDescriptorSets.cpp" />
     <ClCompile Include="VDevice.cpp" />
     <ClCompile Include="VFrameBufferHandler.cpp" />
+    <ClCompile Include="VImage.cpp" />
     <ClCompile Include="VInstance.cpp" />
     <ClCompile Include="VMemTransferCommandPool.cpp" />
     <ClCompile Include="VPhysicalDevice.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="VDevice.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VFrameBufferHandler.h" />
+    <ClInclude Include="VImage.h" />
     <ClInclude Include="VInstance.h" />
     <ClInclude Include="vk_mem_alloc.h" />
     <ClInclude Include="VMemTransferCommandPool.h" />

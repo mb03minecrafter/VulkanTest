@@ -10,7 +10,8 @@
 #include <memory>
 #include "VStagingBuffer.h"
 #include "VMemTransferCommandPool.h"
-
+#include <memory>
+#include "VImage.h"
 
 
 class VTextureImage : VObject
@@ -21,7 +22,7 @@ public:
 	void cleanUp();
 
 	VkImageView getTextureImageView() {
-		return textureImageView;
+		return textureImage->getImageView();
 	}
 
 
@@ -29,26 +30,13 @@ public:
 private:
 	std::unique_ptr<VStagingBuffer> stagingBuffer;
 
-	void grabTexture(std::string path);
+	void grabTexture(std::string path, VmaAllocator allocator);
 
-	VmaAllocator allocator;
-
-	VkImage textureImage;
-	VkImageCreateInfo imageInfo = {};
 	int texWidth, texHeight, texChannels;
-
-	VmaAllocationCreateInfo imageAllocCreateInfo = {};
-	VmaAllocationInfo textureImageAllocInfo = {};
-	VmaAllocation textureImageAlloc;
-
-
-	VkImageView textureImageView;
-	VkImageViewCreateInfo viewInfo{};
-
-	
 
 	VkDevice device;
 	VMemTransferCommandPool commandPool;
 	VkQueue graphicsQueue;
+	std::unique_ptr<VImage> textureImage;
 };
 

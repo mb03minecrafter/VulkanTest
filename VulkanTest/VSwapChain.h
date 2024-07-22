@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include "VPhysicalDevice.h"
+#include "VImage.h"
 
 
 struct SwapChainSupportDetails {
@@ -63,7 +64,6 @@ private:
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, GLFWwindow* window);
 
 
-    std::vector<VkImage> swapChainImages;
 
     void createSwapChain(VkDevice device, VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, GLFWwindow* window, QueueFamilyIndices indices);
 
@@ -71,7 +71,11 @@ private:
     VkExtent2D swapChainExtent;
     VkFormat swapChainImageFormat;
 
+    std::vector<VkImage> swapChainImages;
     std::vector<VkImageView> swapChainImageViews;
+
+
+    std::vector<VImage> swapChainImagesNEW;
 
 };
 
