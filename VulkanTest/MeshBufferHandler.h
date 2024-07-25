@@ -6,7 +6,7 @@
 class MeshBufferHandler
 {
 public:
-	MeshBufferHandler(VmaAllocator allocator, std::vector<Vertex> vertices, std::vector< uint16_t> indices);
+	MeshBufferHandler(VmaAllocator allocator, std::vector<Vertex> vertices, std::vector< uint32_t> indices);
 
 	void cleanUp();
 
@@ -25,6 +25,6 @@ private:
 
 
 	std::vector<Vertex>& vertices;
-	std::vector< uint16_t>& indices;
+	std::vector< uint32_t>& indices;
 };
 

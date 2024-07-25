@@ -3,6 +3,8 @@
 #include <vec2.hpp>
 #include <array>
 #include <ext/matrix_float4x4.hpp>
+#include <vulkan/vulkan.h>
+
 struct Vertex {
     glm::vec3 pos;
     glm::vec3 color;

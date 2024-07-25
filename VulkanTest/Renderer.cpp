@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <array>
 #include <chrono>
+#include "DescriptorLayoutBuilder.h"
 
 
 
@@ -36,7 +37,9 @@ Renderer::Renderer()
 	pipeline = std::make_unique<VPipeline>(device->getDevice(), renderPass->getRenderPass(), *defaultShaderGroup, descriptorSetLayout->getDescriptorSetLayout());
 	frameBufferHandler = std::make_unique<VFrameBufferHandler>(device->getDevice(), renderPass->getRenderPass(), renderPass->getOffscreenRenderPass(), swapChain->getSwapChainImageViewsPtr(), swapChain->getSwapChainExtentPtr(), depth->getDepthImageViewPtr());
 
-	syncObjects = std::make_unique<VSyncObjects>(device->getDevice(), MAX_FRAMES_IN_FLIGHT);
+	frameDataHandler = std::make_unique<VFrameDataHandler>(device->getDevice(), renderCommandPool->getCommandPool(), MAX_FRAMES_IN_FLIGHT);
+
+
 
 	uniformBufferHandler = std::make_unique<UniformBufferHandler>(allocator->getAllocator(), swapChain->getSwapChainExtentPtr(), MAX_FRAMES_IN_FLIGHT);
 	
@@ -50,13 +53,15 @@ Renderer::Renderer()
 
 
 	
+	MC = std::make_unique<MarchingCubes>(glm::vec3(0),glm::vec3(256,256,256), 1);
+	
 
-
-	meshBufferHandler = new MeshBufferHandler(allocator->getAllocator(), vertices, indices);
+	meshBufferHandler = new MeshBufferHandler(allocator->getAllocator(), MC->vertices, MC->indices);
 	meshBufferHandler->transferStagingBuffer(*copyCommandPool);
+	  
 
-	createCommandBuffer();
-}
+	
+ }
 
 bool Renderer::shouldWindowClose()
 {
@@ -79,7 +84,7 @@ void Renderer::cleanUp()
 
 	descriptorPool->cleanUp();
 
-	syncObjects->cleanUp();
+	frameDataHandler->cleanUp();
 
 	copyCommandPool->cleanUp();
 	renderCommandPool->cleanUp();
@@ -114,10 +119,15 @@ void Renderer::drawFrame()
 
 	processInput();
 
-	vkWaitForFences(device->getDevice(), 1, syncObjects->getInFlightFencePtr(currentFrame), VK_TRUE, UINT64_MAX);
+	vkWaitForFences(device->getDevice(), 1, frameDataHandler->getInFlightFencePtr(currentFrame), VK_TRUE, UINT64_MAX);
+
+	//new descriptorpool stuff
+	frameDataHandler->deletePools(currentFrame);
+	frameDataHandler->clearPools(currentFrame);
+
 
 	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(device->getDevice(), swapChain->getSwapChain(), UINT64_MAX, syncObjects->getImageAvailableSemaphore(currentFrame), VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(device->getDevice(), swapChain->getSwapChain(), UINT64_MAX, frameDataHandler->getImageAvailableSemaphore(currentFrame), VK_NULL_HANDLE, &imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
@@ -130,29 +140,29 @@ void Renderer::drawFrame()
 	uniformBufferHandler->updateUniformBuffer(currentFrame, *camera);
 
 
-	vkResetFences(device->getDevice(), 1, syncObjects->getInFlightFencePtr(currentFrame));
+	vkResetFences(device->getDevice(), 1, frameDataHandler->getInFlightFencePtr(currentFrame));
 
 
-	vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
-	recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+	vkResetCommandBuffer(frameDataHandler->getCommandBuffer(currentFrame), /*VkCommandBufferResetFlagBits*/ 0);
+	recordCommandBuffer(frameDataHandler->getCommandBuffer(currentFrame), imageIndex);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore waitSemaphores[] = { syncObjects->getImageAvailableSemaphore(currentFrame) };
+	VkSemaphore waitSemaphores[] = { frameDataHandler->getImageAvailableSemaphore(currentFrame) };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
 
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+	submitInfo.pCommandBuffers = frameDataHandler->getCommandBufferPtr(currentFrame);
 
-	VkSemaphore signalSemaphores[] = { syncObjects->getRenderFinishedSemaphore(currentFrame)};
+	VkSemaphore signalSemaphores[] = { frameDataHandler->getRenderSemaphore(currentFrame)};
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	if (vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, syncObjects->getInFlightFence(currentFrame)) != VK_SUCCESS) {
+	if (vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, frameDataHandler->getInFlightFence(currentFrame)) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
@@ -229,7 +239,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	VkDeviceSize offsets[] = { 0 };
 
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-	vkCmdBindIndexBuffer(commandBuffer, *meshBufferHandler->indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+	vkCmdBindIndexBuffer(commandBuffer, *meshBufferHandler->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipelineLayout(), 0, 1, descriptorSets->getDescriptorSet(currentFrame), 0, nullptr);
 
@@ -241,12 +251,12 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 	meshPushConstant constant;
-	constant.model = glm::rotate(glm::mat4(1.0f),  time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	constant.model = glm::rotate(glm::mat4(1.0f),  0 * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	vkCmdPushConstants(commandBuffer, pipeline->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(meshPushConstant), &constant);
 	//end push constants
 
 
-	vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+	vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(MC->indices.size()), 1, 0, 0, 0);
 
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -279,16 +289,4 @@ void Renderer::recreateSwapChain()
 
 }
 
-void Renderer::createCommandBuffer()
-{
-	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = renderCommandPool->getCommandPool();
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-	if (vkAllocateCommandBuffers(device->getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate command buffers!");
-	}
-}

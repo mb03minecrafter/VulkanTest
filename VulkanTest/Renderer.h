@@ -12,7 +12,6 @@
 #include "ShaderGroup.h"
 #include "VFrameBufferHandler.h"
 #include "VCommandPool.h"
-#include "VSyncObjects.h"
 #include "VBuffer.h"
 #include "Vertex.h"
 #include "VAllocator.h"
@@ -27,6 +26,9 @@
 #include "VTextureSampler.h"
 #include "VDepth.h"
 #include "Camera.h"
+#include "VFrameDataHandler.h"
+#include "DescriptorLayoutBuilder.h"
+#include "MarchingCubes.h"
 
 class Renderer
 {
@@ -83,7 +85,6 @@ private:
 
 	std::unique_ptr<VFrameBufferHandler> frameBufferHandler;
 
-	std::unique_ptr<VSyncObjects> syncObjects;
 
 	std::unique_ptr<VCommandPool> renderCommandPool;
 	std::unique_ptr<VMemTransferCommandPool> copyCommandPool;
@@ -103,12 +104,13 @@ private:
 
 	std::unique_ptr<VDepth> depth;
 
-	std::vector<VkCommandBuffer> commandBuffers;
-	
-	
-	
+	std::unique_ptr<VFrameDataHandler> frameDataHandler;
 
-	void createCommandBuffer();
+	std::unique_ptr <MarchingCubes> MC;
+	
+	VkDescriptorSetLayout testLayout;
+	DescriptorLayoutBuilder builder;
+
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 	uint32_t currentFrame = 0;

@@ -104,14 +104,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glm;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;C:\Users\mbickham\VulkanSDK\1.3.283.0\Include;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glm;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;C:\Users\mbickham\VulkanSDK\1.3.283.0\Include;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\stb-master;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\FastNoise2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\mbickham\VulkanSDK\1.3.283.0\Lib;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\mbickham\VulkanSDK\1.3.283.0\Lib;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\FastNoise2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;FastNoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -122,20 +122,24 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glm;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;C:\Users\mbickham\VulkanSDK\1.3.283.0\Include;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glm;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;C:\Users\mbickham\VulkanSDK\1.3.283.0\Include;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\stb-master;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\FastNoise2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\mbickham\VulkanSDK\1.3.283.0\Lib;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\mbickham\VulkanSDK\1.3.283.0\Lib;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\lib-vc2022;C:\Users\mbickham\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\FastNoise2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;FastNoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DescriptorAllocatorGrowable.cpp" />
+    <ClCompile Include="DescriptorLayoutBuilder.cpp" />
+    <ClCompile Include="DescriptorWriter.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MarchingCubes.cpp" />
     <ClCompile Include="MeshBufferHandler.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -151,6 +155,7 @@
     <ClCompile Include="VDescriptorSets.cpp" />
     <ClCompile Include="VDevice.cpp" />
     <ClCompile Include="VFrameBufferHandler.cpp" />
+    <ClCompile Include="VFrameDataHandler.cpp" />
     <ClCompile Include="VImage.cpp" />
     <ClCompile Include="VInstance.cpp" />
     <ClCompile Include="VMemTransferCommandPool.cpp" />
@@ -160,13 +165,17 @@
     <ClCompile Include="VStagingBuffer.cpp" />
     <ClCompile Include="VSurface.cpp" />
     <ClCompile Include="VSwapChain.cpp" />
-    <ClCompile Include="VSyncObjects.cpp" />
     <ClCompile Include="VTextureImage.cpp" />
     <ClCompile Include="VTextureSampler.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DescriptorAllocatorGrowable.h" />
+    <ClInclude Include="DescriptorLayoutBuilder.h" />
+    <ClInclude Include="DescriptorWriter.h" />
+    <ClInclude Include="FrameData.h" />
+    <ClInclude Include="MarchingCubes.h" />
     <ClInclude Include="MeshBufferHandler.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
@@ -184,6 +193,7 @@
     <ClInclude Include="VDevice.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VFrameBufferHandler.h" />
+    <ClInclude Include="VFrameDataHandler.h" />
     <ClInclude Include="VImage.h" />
     <ClInclude Include="VInstance.h" />
     <ClInclude Include="vk_mem_alloc.h" />
@@ -195,10 +205,17 @@
     <ClInclude Include="VStagingBuffer.h" />
     <ClInclude Include="VSurface.h" />
     <ClInclude Include="VSwapChain.h" />
-    <ClInclude Include="VSyncObjects.h" />
     <ClInclude Include="VTextureImage.h" />
     <ClInclude Include="VTextureSampler.h" />
     <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\..\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\FastNoise2\bin\FastNoise.dll">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </CopyFileToFolders>
+    <None Include="..\..\..\..\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\FastNoise2\bin\FastNoiseD.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

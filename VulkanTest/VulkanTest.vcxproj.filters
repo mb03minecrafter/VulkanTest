@@ -60,9 +60,6 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VSyncObjects.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -100,6 +97,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorAllocatorGrowable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VFrameDataHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorLayoutBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MarchingCubes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -147,9 +159,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VSyncObjects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Vertex.h">
@@ -203,5 +212,33 @@
     <ClInclude Include="VImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DescriptorAllocatorGrowable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DescriptorWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VFrameDataHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DescriptorLayoutBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MarchingCubes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\FastNoise2\bin\FastNoiseD.dll">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\..\..\OneDrive - Louisiana State Employees%27 Retirement System\Documents\Visual Studio 2022\Libraries\FastNoise2\bin\FastNoise.dll">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

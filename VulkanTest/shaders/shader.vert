@@ -13,8 +13,11 @@ layout(location = 3) in vec3 inNormal;
 
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
-layout(location = 2) out vec3 fragNormal;
-layout(location = 3) out vec3 fragPosition;
+layout(location = 2) out vec3 fragPosition;
+layout(location = 3) out vec3 fragNormal;
+
+layout(location = 4) out vec4 cameraPos;
+
 
 
 //push constants block
@@ -27,6 +30,14 @@ void main() {
     gl_Position = ubo.proj * ubo.view * PushConstants.model * vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
-    fragNormal = inNormal;
-    fragPosition = vec3(PushConstants.model * vec4(inPosition, 1.0));
+
+
+    fragNormal = (vec4(inNormal,1) * transpose(inverse(PushConstants.model))).xyz;
+
+    fragPosition =  vec3(PushConstants.model * vec4(inPosition, 1.0));
+
+    mat4 inverseview = inverse(ubo.view);
+    cameraPos = inverseview[3];
+
+
 }

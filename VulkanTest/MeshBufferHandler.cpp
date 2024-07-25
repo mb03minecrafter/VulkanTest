@@ -1,6 +1,6 @@
 #include "MeshBufferHandler.h"
 
-MeshBufferHandler::MeshBufferHandler(VmaAllocator allocator, std::vector<Vertex> vertices, std::vector< uint16_t> indices) :
+MeshBufferHandler::MeshBufferHandler(VmaAllocator allocator, std::vector<Vertex> vertices, std::vector< uint32_t> indices) :
 	vertices(vertices),
 	indices(indices)
 {
