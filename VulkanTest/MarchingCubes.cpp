@@ -4,7 +4,7 @@ MarchingCubes::MarchingCubes(glm::vec3 pos, glm::vec3 size, int resolution)
 {
 
 	fnFractal->SetSource(fnSimplex);
-	fnFractal->SetOctaveCount(1);
+	fnFractal->SetOctaveCount(3);
 	
 
 	float cubeValues[8];

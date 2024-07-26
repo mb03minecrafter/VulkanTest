@@ -6,6 +6,7 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 fragPosition;
 layout(location = 3) in vec3 fragNormal;
+
 layout(location = 4) in vec4 cameraPos;
 
 layout(location = 0) out vec4 outColor;
@@ -14,7 +15,7 @@ layout(location = 0) out vec4 outColor;
 void main() {
     vec3 norm = normalize(fragNormal);
 
-    vec3 lightPos = vec3(128, 128, 128);//cameraPos.xyz;
+    vec3 lightPos = vec3(32, 32, 32);//cameraPos.xyz;
 
     vec3 lightDir = normalize(lightPos - fragPosition);
 

@@ -56,7 +56,7 @@ void VDepth::cleanUp()
 void VDepth::recreate()
 {
     
-
+    depthImage->setImageExent(*swapChainExtent);
     depthImage->createImageAndView();
 
 

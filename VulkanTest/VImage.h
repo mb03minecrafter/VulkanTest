@@ -31,6 +31,10 @@ public:
 		this->image = image;
 	}
 
+	void setImageExent(VkExtent2D extent) {
+		imageExtent = extent;
+	}
+
 private:
 	VkImage image;
 	VkImageCreateInfo imageInfo = {};

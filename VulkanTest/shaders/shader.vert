@@ -32,7 +32,7 @@ void main() {
     fragTexCoord = inTexCoord;
 
 
-    fragNormal = (vec4(inNormal,1) * transpose(inverse(PushConstants.model))).xyz;
+    fragNormal = normalize(inNormal * transpose(inverse(mat3(PushConstants.model))));
 
     fragPosition =  vec3(PushConstants.model * vec4(inPosition, 1.0));
 

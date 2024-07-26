@@ -12,7 +12,7 @@ Renderer::Renderer()
 
 	camera = std::make_unique<Camera>();
 
-	window = std::make_unique<Window>(800, 600, (char*)"test", this);
+	window = std::make_unique<Window>(1920, 1080, (char*)"test", this);
 
 	instance = std::make_unique<VInstance>();
 	debugManager = std::make_unique<VDebugManager>(instance->enableValidationLayers, instance->getInstance());
@@ -53,7 +53,7 @@ Renderer::Renderer()
 
 
 	
-	MC = std::make_unique<MarchingCubes>(glm::vec3(0),glm::vec3(256,256,256), 1);
+	MC = std::make_unique<MarchingCubes>(glm::vec3(0),glm::vec3(64,64,64), 2);
 	
 
 	meshBufferHandler = new MeshBufferHandler(allocator->getAllocator(), MC->vertices, MC->indices);

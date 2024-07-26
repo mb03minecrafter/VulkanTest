@@ -46,14 +46,14 @@ private:
 	void fillColorAttachment(VkFormat colorFormat);
 	void fillDepthAttachment(VkFormat depthFormat);
 
-	std::array<VkSubpassDependency, 2> SetSubpassDependencies();
+	std::array<VkSubpassDependency, 1> SetSubpassDependencies();
 
 
 	VkRenderPassCreateInfo offscreenRenderPassInfo{};
 	VkRenderPass offScreenRenderPass;
 	VkSubpassDescription offScreenSubpass;
 
-	std::array<VkSubpassDependency, 2> offScreenSubpassDependencies;
+	std::array<VkSubpassDependency, 1> offScreenSubpassDependencies;
 
 
 
